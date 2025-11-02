@@ -1,0 +1,83 @@
+C51 COMPILER V9.59.0.0   MAIN                                                              10/23/2025 21:38:41 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\keil\c51\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\mai
+                    -n.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+*** WARNING C500 IN LINE 1 OF main.c: MISSING LICENSE ID CODE (LIC) IN 'TOOLS.INI'
+   1          #include <REGX52.H>
+   2          
+   3          //变量声明区域
+   4          unsigned char NixieTable[]={0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F};
+   5            
+   6          //延时函数
+   7          void Delay(unsigned int xms)
+   8          { unsigned char data i, j;
+   9   1        while(xms--)
+  10   1        {
+  11   2        i = 2;
+  12   2        j = 199;
+  13   2        do
+  14   2        {
+  15   3          while (--j);
+  16   3        } while (--i);
+  17   2        }
+  18   1      }
+  19          
+  20          //静态数码管单个显示函数
+  21          void Nixie(unsigned char Location,unsigned char Number)
+  22          {  //位选
+  23   1        switch(Location)    //注意led编号小的在右侧 而习惯上从左到右编号
+  24   1        {
+  25   2          case 1:P2_2=1;P2_3=1;P2_4=1;break;
+  26   2          case 2:P2_2=0;P2_3=1;P2_4=1;break;
+  27   2          case 3:P2_2=1;P2_3=0;P2_4=1;break;
+  28   2          case 4:P2_2=0;P2_3=0;P2_4=1;break;
+  29   2          case 5:P2_2=1;P2_3=1;P2_4=0;break;
+  30   2          case 6:P2_2=0;P2_3=1;P2_4=0;break;
+  31   2          case 7:P2_2=1;P2_3=0;P2_4=0;break;
+  32   2          case 8:P2_2=0;P2_3=0;P2_4=0;break;  //注意P2_4才是高位
+  33   2        }
+  34   1        //段选  共阴极连接用阳码 即1亮0灭 写出1 0转为8位二进制时注意从P0_7开始为高位
+  35   1        P0=NixieTable[Number];  
+  36   1        //为后面消影
+  37   1        Delay(1);
+  38   1        P0=0x00;
+  39   1      }
+  40          
+  41          
+  42          void main()
+  43          {
+  44   1        while(1)
+  45   1        {
+  46   2          //动态数码管  多个位显示不同数字
+  47   2          Nixie(1,1);
+  48   2          Nixie(2,2);
+  49   2          Nixie(3,3);
+  50   2        
+  51   2        
+  52   2        
+  53   2        }
+C51 COMPILER V9.59.0.0   MAIN                                                              10/23/2025 21:38:41 PAGE 2   
+
+  54   1      
+  55   1      
+  56   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    153    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     10    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,218 @@
+C51 COMPILER V9.59.0.0   MAIN                                                              10/31/2025 10:29:12 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\keil\c51\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\mai
+                    -n.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+*** WARNING C500 IN LINE 1 OF main.c: MISSING LICENSE ID CODE (LIC) IN 'TOOLS.INI'
+   1          #include <REGX52.H>
+   2          #include "Delay.h"
+   3          #include "Timer0.h"
+   4          #include "motor.h"
+   5          
+   6          ////////////变量声明//////////
+   7          
+   8          //////////////////pwm//////////////
+   9          unsigned int PWML=20;
+  10          //unsigned int PWM_Low_TimeL=500; 
+  11          unsigned int PWMR=20; 
+  12          //unsigned int PWM_Low_TimeR=500; 
+  13          unsigned int t=0; 
+  14          ///////////////////电机////////////
+  15          sbit ENAL=P3^2;
+  16          sbit ENAR=P3^7;
+  17          /////////////////红外/////////////
+  18          sbit IRN1=P2^7;
+  19          sbit IRN2=P2^6;
+  20          sbit IRN3=P2^5;
+  21          sbit IRN4=P2^4;
+  22          ////////////////蓝牙/////////////
+  23          unsigned int receive_data;
+  24          
+  25          ////////////////////////蓝牙接收函数///////////////////////
+  26          void Receive_Data(unsigned char m)
+  27          {
+  28   1       switch(m)
+  29   1        {
+  30   2         case '2': 
+  31   2         {
+  32   3          Car_Back();break;
+  33   3         }
+  34   2         case '8': 
+  35   2         {
+  36   3          Car_Go();break;
+  37   3         }
+  38   2         case '4': 
+  39   2         {
+  40   3          Car_SharpLeft();break;
+  41   3         }
+  42   2         case '6':
+  43   2         {
+  44   3         Car_SharpRight();break;
+  45   3         }
+  46   2         case '0':
+  47   2         {
+  48   3          Car_SharpStop();break;
+  49   3         }
+  50   2        }
+  51   1      }
+  52          ////////////////////////串口中断初始化函数///////////////////////
+  53          void Uart_Init()
+C51 COMPILER V9.59.0.0   MAIN                                                              10/31/2025 10:29:12 PAGE 2   
+
+  54          {
+  55   1        PCON=0x00;   //关倍频
+  56   1        SCON=0x50;   
+  57   1        //用定时器1做波特率发生器 下面是其寄存器的配置
+  58   1        TMOD=0x20;   //8倍重载模式
+  59   1        TL1=0xFd;
+  60   1        TH1=0xFd;
+  61   1        ET1=0;   //不让定时器1中断
+  62   1        TR1=1;
+  63   1        EA=1;
+  64   1        ES=1;    //让定时器1通过串口中断
+  65   1      }
+  66            
+  67          ////////////////////////自动转向循迹函数///////////////////////
+  68          void Turn()
+  69          { 
+  70   1      //////////////////////////////////////////////////////////////
+  71   1        if(IRN1==0&&IRN2==0&&IRN3==0&&IRN4==0)   //未检测到黑线 即已出线
+  72   1        {
+  73   2          PWML=20;
+  74   2          PWMR=19;
+  75   2          Car_Back();
+  76   2          Delay(10000);
+  77   2          Car_Stop();
+  78   2        }
+  79   1        
+  80   1      /////////////////////////////////////////////////////////////////
+  81   1        if(IRN1==0&&IRN2==1&&IRN3==0&&IRN4==0)   //缓慢情况的左转
+  82   1        {
+  83   2          Delay(100);
+  84   2          if(IRN1==0&&IRN2==1&&IRN3==0&&IRN4==0)
+  85   2          {
+  86   3            PWML=7;
+  87   3            PWMR=25; 
+  88   3            Car_Go();
+  89   3          } 
+  90   2      
+  91   2        } 
+  92   1      //////////////////////////////////////////////////////////////
+  93   1        if(IRN1==0&&IRN2==0&&IRN3==1&&IRN4==1)   //右急转
+  94   1        {
+  95   2          Delay(100);
+  96   2          if(IRN1==0&&IRN2==0&&IRN3==1&&IRN4==1)
+  97   2          {  
+  98   3            Car_SharpRight();   
+  99   3          } 
+ 100   2        
+ 101   2        }   
+ 102   1      //////////////////////////////////////////////////////////////
+ 103   1        if(IRN1==1&&IRN2==1&&IRN3==0&&IRN4==0)    //左急转
+ 104   1        {
+ 105   2          Delay(100);
+ 106   2          if(IRN1==1&&IRN2==1&&IRN3==0&&IRN4==0)
+ 107   2          {  
+ 108   3            Car_SharpLeft();    
+ 109   3          } 
+ 110   2        }
+ 111   1      //////////////////////////////////////////////////////////////  
+ 112   1        if(IRN1==0&&IRN2==0&&IRN3==1&&IRN4==0)   //缓慢情况的右转
+ 113   1        {
+ 114   2          Delay(100);
+ 115   2          if(IRN1==0&&IRN2==0&&IRN3==1&&IRN4==0)
+C51 COMPILER V9.59.0.0   MAIN                                                              10/31/2025 10:29:12 PAGE 3   
+
+ 116   2          {
+ 117   3            PWML=25;
+ 118   3            PWMR=5; 
+ 119   3            Car_Go();
+ 120   3          } 
+ 121   2      
+ 122   2        } 
+ 123   1      ////////////////////////////////////////////////////////////////
+ 124   1        if(IRN1==0&&IRN2==1&&IRN3==1&&IRN4==0)    //直走
+ 125   1        {
+ 126   2        Delay(100);
+ 127   2          if(IRN2==1&&IRN3==1)
+ 128   2          {
+ 129   3          PWML=20;
+ 130   3          PWMR=19;
+ 131   3          Car_Go();
+ 132   3          
+ 133   3          }
+ 134   2        }
+ 135   1      
+ 136   1      } 
+ 137          
+ 138          
+ 139          //////////////////////////////main函数///////////////////////////
+ 140          void main()
+ 141          { 
+ 142   1        Timer0_Init();
+ 143   1        Uart_Init();
+ 144   1        while(1)
+ 145   1        {
+ 146   2          Turn();
+ 147   2        }
+ 148   1      
+ 149   1      }
+ 150          /////////////////////////////定时器0pwm//////////////////////////////
+ 151          void Timer0_Routine() interrupt 1   
+ 152          {
+ 153   1       TL0 = (65535-200)%256;       //设置定时初始值
+ 154   1        TH0 = (65535-200)/256;        //设置定时初始值
+ 155   1        t++;
+ 156   1        if(t<=PWML)
+ 157   1        {
+ 158   2          ENAL=1;
+ 159   2        }
+ 160   1        else{ENAL=0;} 
+ 161   1        
+ 162   1        if(t<=PWMR)
+ 163   1        {
+ 164   2          ENAR=1;
+ 165   2        }
+ 166   1        else{ENAR=0;} 
+ 167   1        
+ 168   1        if(t>100) 
+ 169   1        {
+ 170   2          t=0;
+ 171   2        }
+ 172   1        //周期为200微秒乘以100  PWM为百分比 范围0到100
+ 173   1      }
+ 174          
+ 175          ////////////////////////串口中断服务函数///////////////////////
+ 176          void Uart_Routine() interrupt 4
+ 177          {  
+C51 COMPILER V9.59.0.0   MAIN                                                              10/31/2025 10:29:12 PAGE 4   
+
+ 178   1        Car_Stop();
+ 179   1        RI=0;
+ 180   1        receive_data=SBUF;
+ 181   1        Receive_Data(receive_data);
+ 182   1      }
+ 183          
+ 184          
+ 185          
+ 186          
+ 187          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    453    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

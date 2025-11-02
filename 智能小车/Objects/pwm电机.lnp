@@ -1,0 +1,7 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj",
+".\Objects\Delay.obj",
+".\Objects\TImer0.obj",
+".\Objects\motor.obj" 
+TO ".\Objects\pwm电机" 
+PRINT(".\Listings\pwm电机.m51") RAMSIZE(256) 
