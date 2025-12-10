@@ -1,0 +1,255 @@
+C51 COMPILER V9.59.0.0   MAIN                                                              12/09/2025 21:13:49 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\keil\MDK\MDK\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "Delay.h"
+   3          #include "Timer0.h"
+   4          #include "motor.h"
+   5          #include "follow.h"
+   6          #include "Utra.h"
+   7          
+   8          ////////////变量声明////////////
+   9          /////////////////pwm//////////////
+  10          unsigned int PWML=25;
+  11          //unsigned int PWM_Low_TimeL=500; 
+  12          unsigned int PWMR=59; 
+  13          //unsigned int PWM_Low_TimeR=500; 
+  14          unsigned int t=0; 
+  15          ///////////////////电机////////////
+  16          sbit ENAL=P3^2;
+  17          sbit ENAR=P3^7;
+  18          ////////////////蓝牙/////////////
+  19          unsigned int receive_data;
+  20          ////////////// 避障状态变量/////////////////////////
+  21          unsigned char avoid_state = 0;     // 避障状态
+  22          unsigned int avoid_timer = 0;      // 避障计时器
+  23          unsigned int last_distance = 0;    // 上次测量的距离
+  24          
+  25          ////////////////////////蓝牙接收函数///////////////////////
+  26          void Receive_Data(unsigned char m)
+  27          {
+  28   1       switch(m)
+  29   1        {
+  30   2         case '2': 
+  31   2         {
+  32   3          Car_Back();break;
+  33   3         }
+  34   2         case '8': 
+  35   2         {
+  36   3          Car_Go();break;
+  37   3         }
+  38   2         case '4': 
+  39   2         {
+  40   3          Car_SharpLeft();break;
+  41   3         }
+  42   2         case '6':
+  43   2         {
+  44   3         Car_SharpRight();break;
+  45   3         }
+  46   2         case '0':
+  47   2         {
+  48   3          Car_SharpStop();break;
+  49   3         }
+  50   2         case '1':
+  51   2         {
+  52   3          if(PWML<=100&&PWMR<=100)
+  53   3          { PWML+=20;
+  54   4          PWMR+=20;break;}
+C51 COMPILER V9.59.0.0   MAIN                                                              12/09/2025 21:13:49 PAGE 2   
+
+  55   3         }
+  56   2         case '3':
+  57   2         {
+  58   3           if(PWML>20)
+  59   3           {PWML-=20;
+  60   4            PWMR-=20;
+  61   4           }break;
+  62   3         }
+  63   2         default: {break;}
+  64   2        }
+  65   1      }
+  66          
+  67          ////////////////////////串口中断初始化函数///////////////////////
+  68          void Uart_Init()
+  69          {
+  70   1        PCON=0x00;   //关倍频
+  71   1        SCON=0x50;   
+  72   1        //用定时器1做波特率发生器 下面是其寄存器的配置
+  73   1        TMOD &= 0x0F;  // 清零高4位（定时器1相关位）
+  74   1          TMOD |= 0x20;  // 设置定时器1为模式2（8位自动重载）
+  75   1        TL1=0xFd;
+  76   1        TH1=0xFd;
+  77   1        ET1=0;   //不让定时器1中断
+  78   1        TR1=1;
+  79   1        EA=1;
+  80   1        ES=1;    //让定时器1通过串口中断
+  81   1      }
+  82          //////////////////////避障处理函数//////////////////////////////
+  83          void Obstacle_Avoidance(unsigned int dist)
+  84          {
+  85   1          if(dist < 30 && dist > 0)  // 检测到障碍物（30cm内）
+  86   1          {
+  87   2              switch(avoid_state)
+  88   2              {
+  89   3                  case 0:  // 立即停止
+  90   3                      Car_SharpStop();
+  91   3                      avoid_timer++;
+  92   3                      if(avoid_timer > 50)  // 停止500ms
+  93   3                      {
+  94   4                          avoid_state = 1;
+  95   4                          avoid_timer = 0;
+  96   4                      }
+  97   3                      break;
+  98   3                      
+  99   3                  case 1:  // 后退
+ 100   3                      Car_Back();
+ 101   3                      avoid_timer++;
+ 102   3                      if(avoid_timer > 30)  // 后退300ms
+ 103   3                      {
+ 104   4                          avoid_state = 2;
+ 105   4                          avoid_timer = 0;
+ 106   4                      }
+ 107   3                      break;
+ 108   3                      
+ 109   3                  case 2:  // 右转
+ 110   3                      Car_SharpRight();
+ 111   3                      avoid_timer++;
+ 112   3                      if(avoid_timer > 80)  // 右转800ms
+ 113   3                      {
+ 114   4                          avoid_state = 3;
+ 115   4                          avoid_timer = 0;
+ 116   4                      }
+C51 COMPILER V9.59.0.0   MAIN                                                              12/09/2025 21:13:49 PAGE 3   
+
+ 117   3                      break;
+ 118   3                      
+ 119   3                  case 3:  // 短暂停止
+ 120   3                      Car_Stop();
+ 121   3                      avoid_timer++;
+ 122   3                      if(avoid_timer > 20)  // 停止200ms
+ 123   3                      {
+ 124   4                          avoid_state = 0;  // 完成避障，返回初始状态
+ 125   4                          avoid_timer = 0;
+ 126   4                      }
+ 127   3                      break;
+ 128   3              }
+ 129   2          }
+ 130   1          else
+ 131   1          {
+ 132   2              // 没有障碍物，重置避障状态
+ 133   2              avoid_state = 0;
+ 134   2              avoid_timer = 0;
+ 135   2          }
+ 136   1      }
+ 137          
+ 138          //////////////////////main函数//////////////////////////////
+ 139          void main()
+ 140          {   unsigned int dis = 0;
+ 141   1          static unsigned int measure_counter = 0;
+ 142   1          
+ 143   1          Timer0_Init();
+ 144   1          Timer2_Init();
+ 145   1          Uart_Init();
+ 146   1          
+ 147   1          // 等待系统稳定
+ 148   1          Delay(1000);
+ 149   1          
+ 150   1          while(1)
+ 151   1          {
+ 152   2             // 更新超声波状态机（非阻塞）
+ 153   2              Sonar_Update();
+ 154   2              
+ 155   2              // 每50次循环触发一次测量（控制测量频率）
+ 156   2              measure_counter++;
+ 157   2              if(measure_counter >= 50)
+ 158   2              {
+ 159   3                  measure_counter = 0;
+ 160   3                  Sonar_Trigger();  // 触发测量
+ 161   3              }
+ 162   2              
+ 163   2              // 获取当前距离
+ 164   2              dis = GetDistance();
+ 165   2              
+ 166   2              // 避障处理
+ 167   2              if(dis < 30 && dis > 0)
+ 168   2              {
+ 169   3                  Obstacle_Avoidance(dis);
+ 170   3              }
+ 171   2              else
+ 172   2              {
+ 173   3                  // 没有障碍物时执行巡线
+ 174   3                  Turn();
+ 175   3              }
+ 176   2              
+ 177   2              // 短延时，避免循环过快
+ 178   2              {
+C51 COMPILER V9.59.0.0   MAIN                                                              12/09/2025 21:13:49 PAGE 4   
+
+ 179   3                  unsigned char i;
+ 180   3                  for(i = 0; i < 10; i++);
+ 181   3              }
+ 182   2          }
+ 183   1      }
+ 184          ////////////////////////串口中断服务函数///////////////////////
+ 185          void Uart_Routine() interrupt 4
+ 186          {  
+ 187   1       if(RI==1)
+ 188   1       {receive_data=SBUF;
+ 189   2        Receive_Data(receive_data);
+ 190   2        RI=0;
+ 191   2       }
+ 192   1       if(TI==1)
+ 193   1       {
+ 194   2       TI=0;
+ 195   2       }
+ 196   1      }
+ 197          /////////////////////////////定时器0pwm//////////////////////////////
+ 198          void Timer0_Routine() interrupt 1   
+ 199          {
+ 200   1       TL0 = (65535-184)%256;       //设置定时初始值
+ 201   1        TH0 = (65535-184)/256;        //设置定时初始值
+ 202   1        t++;
+ 203   1        if(t<=PWML)
+ 204   1        {
+ 205   2          ENAL=1;
+ 206   2        }
+ 207   1        else{ENAL=0;} 
+ 208   1        
+ 209   1        if(t<=PWMR)
+ 210   1        {
+ 211   2          ENAR=1;
+ 212   2        }
+ 213   1        else{ENAR=0;} 
+ 214   1        
+ 215   1        if(t>100) 
+ 216   1        {
+ 217   2          t=0;
+ 218   2        }
+ 219   1        //周期为200微秒乘以100  PWM为百分比 范围0到100
+ 220   1      }
+ 221          
+ 222          
+ 223          
+ 224          
+ 225          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    563    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     15       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

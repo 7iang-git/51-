@@ -1,0 +1,211 @@
+C51 COMPILER V9.59.0.0   UTRA                                                              12/09/2025 21:12:50 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE UTRA
+OBJECT MODULE PLACED IN .\Objects\Utra.obj
+COMPILER INVOKED BY: D:\keil\MDK\MDK\C51\BIN\C51.EXE Utra.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\Utra.lst) TABS(2) OBJECT(.\Objects\Utra.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "Delay.h"
+   3          #include "Timer0.h"
+   4          #include "motor.h"
+   5          #include "follow.h"
+   6          
+   7          sbit Trig = P2^1;
+   8          sbit Echo = P2^0;
+   9          
+  10          // 超声波测量状态机
+  11          typedef enum {
+  12              SONAR_IDLE = 0,        // 空闲状态
+  13              SONAR_TRIGGER,         // 发送触发脉冲
+  14              SONAR_WAIT_RISING,     // 等待上升沿
+  15              SONAR_MEASURING,       // 测量中
+  16              SONAR_COMPLETE         // 测量完成
+  17          } SonarState;
+  18          
+  19          // 全局变量
+  20          unsigned int distance = 0;      // 测量距离
+  21          SonarState sonar_state = SONAR_IDLE;  // 当前状态
+  22          unsigned long echo_start_time = 0;    // 上升沿时间（毫秒）
+  23          unsigned long echo_end_time = 0;      // 下降沿时间（毫秒）
+  24          unsigned long sonar_timeout = 0;      // 超时时间点
+  25          unsigned char need_trigger = 0;       // 需要触发标志
+  26          
+  27          // Timer2毫秒计数器（在中断中更新）
+  28          volatile unsigned long timer2_millis = 0;
+  29          
+  30          ////////////////////////////////发射超声波//////////////////////////////////
+  31          void Delay20us(void)    //@11.0592MHz
+  32          {
+  33   1          unsigned char data i;
+  34   1          i = 6;
+  35   1          while (--i);
+  36   1      }
+  37          
+  38          void SendTrigger(void)
+  39          {
+  40   1          Trig = 1;
+  41   1          Delay20us();      // 保持至少10us高电平
+  42   1          Delay20us();      // 再延时20us，确保足够
+  43   1          Trig = 0;
+  44   1      }
+  45          
+  46          //////////////////////////////Timer2初始化//////////////////////////////
+  47          void Timer2_Init(void)
+  48          {
+  49   1          // Timer2作为16位自动重装定时器，用于产生1ms中断
+  50   1          // 11.0592MHz晶振，12T模式，1ms需要922个机器周期
+  51   1          // 计数值 = 65536 - 922 = 64614 = 0xFC66
+  52   1          T2CON = 0x00;      // 16位自动重装模式
+  53   1          RCAP2H = 0xFC;     // 自动重装值高位
+  54   1          RCAP2L = 0x66;     // 自动重装值低位
+C51 COMPILER V9.59.0.0   UTRA                                                              12/09/2025 21:12:50 PAGE 2   
+
+  55   1          TH2 = 0xFC;        // 初始值高位
+  56   1          TL2 = 0x66;        // 初始值低位
+  57   1          ET2 = 1;           // 开启Timer2中断
+  58   1          EA = 1;            // 开总中断
+  59   1          TR2 = 1;           // 启动Timer2
+  60   1      }
+  61          
+  62          /////////////////////////////////超声波状态机更新函数//////////////////////////////
+  63          void Sonar_Update(void)
+  64          {
+  65   1          unsigned long current_time = timer2_millis;  // 获取当前时间（毫秒）
+  66   1          
+  67   1          switch(sonar_state)
+  68   1          {
+  69   2              case SONAR_IDLE:
+  70   2                  // 检查是否需要新的测量
+  71   2                  if(need_trigger)
+  72   2                  {
+  73   3                      // 检查是否满足测量间隔（至少60ms）
+  74   3                      static unsigned long last_measure_time = 0;
+  75   3                      if((current_time - last_measure_time) >= 60)
+  76   3                      {
+  77   4                          sonar_state = SONAR_TRIGGER;
+  78   4                          need_trigger = 0;
+  79   4                          last_measure_time = current_time;
+  80   4                      }
+  81   3                  }
+  82   2                  break;
+  83   2                  
+  84   2              case SONAR_TRIGGER:
+  85   2                  // 发送触发脉冲
+  86   2                  SendTrigger();
+  87   2                  echo_start_time = 0;
+  88   2                  echo_end_time = 0;
+  89   2                  sonar_state = SONAR_WAIT_RISING;
+  90   2                  // 设置超时：5ms内必须检测到上升沿
+  91   2                  sonar_timeout = current_time + 5;
+  92   2                  break;
+  93   2                  
+  94   2              case SONAR_WAIT_RISING:
+  95   2                  // 检查是否超时
+  96   2                  if(current_time > sonar_timeout)
+  97   2                  {
+  98   3                      sonar_state = SONAR_IDLE;
+  99   3                      distance = 0;  // 超时返回0
+ 100   3                      break;
+ 101   3                  }
+ 102   2                  
+ 103   2                  // 检查上升沿
+ 104   2                  if(Echo)
+ 105   2                  {
+ 106   3                      // 记录上升沿时间
+ 107   3                      echo_start_time = current_time;
+ 108   3                      sonar_state = SONAR_MEASURING;
+ 109   3                      // 设置超时：26ms内必须检测到下降沿（最大测量距离）
+ 110   3                      sonar_timeout = current_time + 26;
+ 111   3                  }
+ 112   2                  break;
+ 113   2                  
+ 114   2              case SONAR_MEASURING:
+ 115   2                  // 检查是否超时
+ 116   2                  if(current_time > sonar_timeout)
+C51 COMPILER V9.59.0.0   UTRA                                                              12/09/2025 21:12:50 PAGE 3   
+
+ 117   2                  {
+ 118   3                      // 超时，按最大距离处理
+ 119   3                      echo_end_time = current_time;
+ 120   3                      sonar_state = SONAR_COMPLETE;
+ 121   3                      break;
+ 122   3                  }
+ 123   2                  
+ 124   2                  // 检查下降沿
+ 125   2                  if(!Echo)
+ 126   2                  {
+ 127   3                      echo_end_time = current_time;
+ 128   3                      sonar_state = SONAR_COMPLETE;
+ 129   3                  }
+ 130   2                  break;
+ 131   2                  
+ 132   2              case SONAR_COMPLETE:
+ 133   2                  // 计算距离
+ 134   2                  if(echo_start_time > 0 && echo_end_time > echo_start_time)
+ 135   2                  {
+ 136   3                      // 计算高电平时间（毫秒）
+ 137   3                      unsigned long time_ms = echo_end_time - echo_start_time;
+ 138   3                      
+ 139   3                      // 转换为微秒：time_us = time_ms * 1000
+ 140   3                      // 距离(cm) = 时间(us) / 58
+ 141   3                      // 所以：距离 = (time_ms * 1000) / 58
+ 142   3                      // 简化计算避免溢出：距离 = time_ms * 17
+ 143   3                      distance = (unsigned int)(time_ms * 17);
+ 144   3                      
+ 145   3                      // 限制最大距离（约4.5米）
+ 146   3                      if(distance > 450) distance = 450;
+ 147   3                      // 限制最小有效距离（约2cm）
+ 148   3                      if(distance < 2) distance = 0;
+ 149   3                  }
+ 150   2                  else
+ 151   2                  {
+ 152   3                      distance = 0;
+ 153   3                  }
+ 154   2                  
+ 155   2                  sonar_state = SONAR_IDLE;
+ 156   2                  break;
+ 157   2          }
+ 158   1      }
+ 159          
+ 160          /////////////////////////////////触发一次测量//////////////////////////////
+ 161          void Sonar_Trigger(void)
+ 162          {
+ 163   1          if(sonar_state == SONAR_IDLE)
+ 164   1          {
+ 165   2              need_trigger = 1;
+ 166   2          }
+ 167   1          // 如果正在测量中，忽略本次触发
+ 168   1      }
+ 169          
+ 170          /////////////////////////////////获取当前距离//////////////////////////////
+ 171          unsigned int GetDistance(void)
+ 172          {
+ 173   1          return distance;
+ 174   1      }
+ 175          
+ 176          ////////////////////////////////////////Timer2中断服务///////////////////////////
+ 177          void Timer2_Routine(void) interrupt 5
+ 178          {
+C51 COMPILER V9.59.0.0   UTRA                                                              12/09/2025 21:12:50 PAGE 4   
+
+ 179   1          TF2 = 0;  // 清除中断标志
+ 180   1          timer2_millis++;  // 毫秒计数器加1
+ 181   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    484    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     24       8
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

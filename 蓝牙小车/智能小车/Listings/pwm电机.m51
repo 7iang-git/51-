@@ -1,0 +1,556 @@
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                    12/10/2025  15:34:56  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0, INVOKED BY:
+D:\KEIL\MDK\MDK\C51\BIN\BL51.EXE .\Objects\STARTUP.obj, .\Objects\main.obj, .\Objects\Delay.obj, .\Objects\TImer0.obj, .
+>> \Objects\motor.obj, .\Objects\ultrasonic.obj TO .\Objects\pwm电机 PRINT (.\Listings\pwm电机.m51) RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\STARTUP.obj (?C_STARTUP)
+  .\Objects\main.obj (MAIN)
+  .\Objects\Delay.obj (DELAY)
+  .\Objects\TImer0.obj (TIMER0)
+  .\Objects\motor.obj (MOTOR)
+  .\Objects\ultrasonic.obj (ULTRASONIC)
+  D:\KEIL\MDK\MDK\C51\LIB\C51S.LIB (?C_INIT)
+  D:\KEIL\MDK\MDK\C51\LIB\C51S.LIB (?C?LMUL)
+  D:\KEIL\MDK\MDK\C51\LIB\C51S.LIB (?C?ULDIV)
+  D:\KEIL\MDK\MDK\C51\LIB\C51S.LIB (?C?ULCMP)
+
+
+LINK MAP OF MODULE:  .\Objects\pwm电机 (?C_STARTUP)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0008H     UNIT         ?DT?MAIN
+            DATA    0010H     0004H     UNIT         ?DT?ULTRASONIC
+            DATA    0014H     0004H     UNIT         _DATA_GROUP_
+            IDATA   0018H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     0006H     UNIT         ?PR?CAR_GO?MOTOR
+                    0009H     0002H                  *** GAP ***
+            CODE    000BH     0003H     ABSOLUTE     
+            CODE    000EH     0015H     UNIT         ?C_INITSEG
+            CODE    0023H     0003H     ABSOLUTE     
+            CODE    0026H     012EH     UNIT         ?C?LIB_CODE
+            CODE    0154H     00A0H     UNIT         ?PR?GETDISTANCE?ULTRASONIC
+            CODE    01F4H     008CH     UNIT         ?C_C51STARTUP
+            CODE    0280H     0048H     UNIT         ?PR?TIMER0_ROUTINE?MAIN
+            CODE    02C8H     0047H     UNIT         ?PR?UART_ROUTINE?MAIN
+            CODE    030FH     0036H     UNIT         ?PR?ULTRASONIC_AVOIDANCE?ULTRASONIC
+            CODE    0345H     0025H     UNIT         ?PR?_RECEIVE_DATA?MAIN
+            CODE    036AH     001BH     UNIT         ?PR?UART_INIT?MAIN
+            CODE    0385H     0017H     UNIT         ?PR?TIMER0_INIT?TIMER0
+            CODE    039CH     0015H     UNIT         ?PR?_DELAY?DELAY
+            CODE    03B1H     0012H     UNIT         ?PR?MAIN?MAIN
+            CODE    03C3H     0006H     UNIT         ?PR?CAR_BACK?MOTOR
+            CODE    03C9H     0006H     UNIT         ?PR?CAR_RIGHT?MOTOR
+            CODE    03CFH     0006H     UNIT         ?PR?CAR_LEFT?MOTOR
+            CODE    03D5H     0006H     UNIT         ?PR?CAR_SHARPLEFT?MOTOR
+            CODE    03DBH     0006H     UNIT         ?PR?CAR_SHARPRIGHT?MOTOR
+            CODE    03E1H     0006H     UNIT         ?PR?CAR_STOP?MOTOR
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  12/10/2025  15:34:56  PAGE 2
+
+
+            CODE    03E7H     0006H     UNIT         ?PR?CAR_SHARPSTOP?MOTOR
+            CODE    03EDH     0005H     UNIT         ?PR?LEFTMOTOR_FORWARD?MOTOR
+            CODE    03F2H     0005H     UNIT         ?PR?LEFTMOTOR_BACK?MOTOR
+            CODE    03F7H     0005H     UNIT         ?PR?LEFTMOTOR_STOP?MOTOR
+            CODE    03FCH     0005H     UNIT         ?PR?LEFTMOTOR_SHARPSTOP?MOTOR
+            CODE    0401H     0005H     UNIT         ?PR?RIGHTMOTOR_FORWARD?MOTOR
+            CODE    0406H     0005H     UNIT         ?PR?RIGHTMOTOR_BACK?MOTOR
+            CODE    040BH     0005H     UNIT         ?PR?RIGHTMOTOR_STOP?MOTOR
+            CODE    0410H     0005H     UNIT         ?PR?RIGHTMOTOR_SHARPSTOP?MOTOR
+            CODE    0415H     0005H     UNIT         ?PR?DELAY20US?ULTRASONIC
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\pwm电机 (?C_STARTUP)
+
+
+SEGMENT                                       DATA_GROUP 
+  +--> CALLED SEGMENT                       START    LENGTH
+-----------------------------------------------------------
+?C_C51STARTUP                               -----    -----
+  +--> ?PR?MAIN?MAIN
+  +--> ?C_INITSEG
+
+?PR?MAIN?MAIN                               -----    -----
+  +--> ?PR?TIMER0_INIT?TIMER0
+  +--> ?PR?UART_INIT?MAIN
+  +--> ?PR?ULTRASONIC_AVOIDANCE?ULTRASONIC
+  +--> ?PR?_DELAY?DELAY
+
+?PR?ULTRASONIC_AVOIDANCE?ULTRASONIC         -----    -----
+  +--> ?PR?GETDISTANCE?ULTRASONIC
+  +--> ?PR?CAR_SHARPSTOP?MOTOR
+
+?PR?GETDISTANCE?ULTRASONIC                  0014H    0004H
+  +--> ?PR?DELAY20US?ULTRASONIC
+
+?PR?CAR_SHARPSTOP?MOTOR                     -----    -----
+  +--> ?PR?LEFTMOTOR_SHARPSTOP?MOTOR
+  +--> ?PR?RIGHTMOTOR_SHARPSTOP?MOTOR
+
+*** NEW ROOT ***************************************************
+
+?PR?UART_ROUTINE?MAIN                       -----    -----
+  +--> ?PR?CAR_STOP?MOTOR
+  +--> ?PR?_RECEIVE_DATA?MAIN
+
+?PR?CAR_STOP?MOTOR                          -----    -----
+  +--> ?PR?LEFTMOTOR_STOP?MOTOR
+  +--> ?PR?RIGHTMOTOR_STOP?MOTOR
+
+?PR?_RECEIVE_DATA?MAIN                      -----    -----
+  +--> ?PR?CAR_BACK?MOTOR
+  +--> ?PR?CAR_GO?MOTOR
+  +--> ?PR?CAR_SHARPLEFT?MOTOR
+  +--> ?PR?CAR_SHARPRIGHT?MOTOR
+  +--> ?PR?CAR_SHARPSTOP?MOTOR
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  12/10/2025  15:34:56  PAGE 3
+
+
+?PR?CAR_BACK?MOTOR                          -----    -----
+  +--> ?PR?LEFTMOTOR_BACK?MOTOR
+  +--> ?PR?RIGHTMOTOR_BACK?MOTOR
+
+?PR?CAR_GO?MOTOR                            -----    -----
+  +--> ?PR?LEFTMOTOR_FORWARD?MOTOR
+  +--> ?PR?RIGHTMOTOR_FORWARD?MOTOR
+
+?PR?CAR_SHARPLEFT?MOTOR                     -----    -----
+  +--> ?PR?LEFTMOTOR_BACK?MOTOR
+  +--> ?PR?RIGHTMOTOR_FORWARD?MOTOR
+
+?PR?CAR_SHARPRIGHT?MOTOR                    -----    -----
+  +--> ?PR?RIGHTMOTOR_BACK?MOTOR
+  +--> ?PR?LEFTMOTOR_FORWARD?MOTOR
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\pwm电机 (?C_STARTUP)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        ?C_STARTUP
+  C:01F4H         SEGMENT       ?C_C51STARTUP
+  I:0018H         SEGMENT       ?STACK
+  C:0000H         PUBLIC        ?C_STARTUP
+  D:00E0H         SYMBOL        ACC
+  D:00F0H         SYMBOL        B
+  D:0083H         SYMBOL        DPH
+  D:0082H         SYMBOL        DPL
+  N:0000H         SYMBOL        IBPSTACK
+  N:0100H         SYMBOL        IBPSTACKTOP
+  N:0080H         SYMBOL        IDATALEN
+  C:01F7H         SYMBOL        IDATALOOP
+  N:0000H         SYMBOL        PBPSTACK
+  N:0100H         SYMBOL        PBPSTACKTOP
+  N:0000H         SYMBOL        PDATALEN
+  N:0000H         SYMBOL        PDATASTART
+  N:0000H         SYMBOL        PPAGE
+  N:0000H         SYMBOL        PPAGEENABLE
+  D:00A0H         SYMBOL        PPAGE_SFR
+  D:0081H         SYMBOL        SP
+  C:01F4H         SYMBOL        STARTUP1
+  N:0000H         SYMBOL        XBPSTACK
+  N:0000H         SYMBOL        XBPSTACKTOP
+  N:0000H         SYMBOL        XDATALEN
+  N:0000H         SYMBOL        XDATASTART
+  C:0000H         LINE#         126
+  C:01F4H         LINE#         133
+  C:01F6H         LINE#         134
+  C:01F7H         LINE#         135
+  C:01F8H         LINE#         136
+  C:01FAH         LINE#         185
+  C:01FDH         LINE#         196
+  -------         ENDMOD        ?C_STARTUP
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  12/10/2025  15:34:56  PAGE 4
+
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  C:0280H         PUBLIC        Timer0_Routine
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  B:00A8H.7       PUBLIC        EA
+  C:036AH         PUBLIC        Uart_Init
+  B:00A8H.4       PUBLIC        ES
+  B:0098H.0       PUBLIC        RI
+  B:00B0H.2       PUBLIC        ENAL
+  C:0345H         PUBLIC        _Receive_Data
+  C:03B1H         PUBLIC        main
+  B:00B0H.7       PUBLIC        ENAR
+  D:0099H         PUBLIC        SBUF
+  D:0087H         PUBLIC        PCON
+  D:0098H         PUBLIC        SCON
+  D:0089H         PUBLIC        TMOD
+  D:0008H         PUBLIC        PWML
+  D:000AH         PUBLIC        PWMR
+  B:00A8H.3       PUBLIC        ET1
+  D:008CH         PUBLIC        TH0
+  D:008DH         PUBLIC        TH1
+  D:008AH         PUBLIC        TL0
+  D:008BH         PUBLIC        TL1
+  B:0088H.6       PUBLIC        TR1
+  D:000CH         PUBLIC        receive_data
+  C:02C8H         PUBLIC        Uart_Routine
+  D:000EH         PUBLIC        t
+  -------         PROC          _RECEIVE_DATA
+  D:0007H         SYMBOL        m
+  C:0345H         LINE#         27
+  C:0345H         LINE#         28
+  C:0345H         LINE#         29
+  C:035AH         LINE#         30
+  C:035AH         LINE#         31
+  C:035AH         LINE#         32
+  C:035AH         LINE#         33
+  C:035DH         LINE#         34
+  C:035DH         LINE#         35
+  C:035DH         LINE#         36
+  C:035DH         LINE#         37
+  C:0360H         LINE#         38
+  C:0360H         LINE#         39
+  C:0360H         LINE#         40
+  C:0360H         LINE#         41
+  C:0363H         LINE#         42
+  C:0363H         LINE#         43
+  C:0363H         LINE#         44
+  C:0363H         LINE#         45
+  C:0366H         LINE#         46
+  C:0366H         LINE#         47
+  C:0366H         LINE#         48
+  C:0366H         LINE#         49
+  C:0369H         LINE#         50
+  C:0369H         LINE#         51
+  C:0369H         LINE#         52
+  -------         ENDPROC       _RECEIVE_DATA
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  12/10/2025  15:34:56  PAGE 5
+
+
+  -------         PROC          UART_INIT
+  C:036AH         LINE#         54
+  C:036AH         LINE#         55
+  C:036AH         LINE#         56
+  C:036DH         LINE#         57
+  C:0370H         LINE#         60
+  C:0373H         LINE#         61
+  C:0376H         LINE#         63
+  C:0379H         LINE#         64
+  C:037CH         LINE#         65
+  C:037EH         LINE#         66
+  C:0380H         LINE#         68
+  C:0382H         LINE#         69
+  C:0384H         LINE#         70
+  -------         ENDPROC       UART_INIT
+  -------         PROC          MAIN
+  C:03B1H         LINE#         73
+  C:03B1H         LINE#         74
+  C:03B1H         LINE#         75
+  C:03B4H         LINE#         76
+  C:03B7H         LINE#         77
+  C:03B7H         LINE#         78
+  C:03B7H         LINE#         79
+  C:03BAH         LINE#         81
+  C:03C1H         LINE#         82
+  -------         ENDPROC       MAIN
+  -------         PROC          TIMER0_ROUTINE
+  C:0280H         LINE#         86
+  C:0284H         LINE#         88
+  C:0287H         LINE#         89
+  C:028AH         LINE#         90
+  C:0292H         LINE#         91
+  C:029BH         LINE#         92
+  C:029BH         LINE#         93
+  C:029DH         LINE#         94
+  C:029FH         LINE#         95
+  C:02A1H         LINE#         97
+  C:02ACH         LINE#         98
+  C:02ACH         LINE#         99
+  C:02AEH         LINE#         100
+  C:02B0H         LINE#         101
+  C:02B2H         LINE#         103
+  C:02BDH         LINE#         104
+  C:02BDH         LINE#         105
+  C:02C3H         LINE#         106
+  C:02C3H         LINE#         108
+  -------         ENDPROC       TIMER0_ROUTINE
+  -------         PROC          UART_ROUTINE
+  C:02C8H         LINE#         111
+  C:02E5H         LINE#         113
+  C:02E8H         LINE#         114
+  C:02EAH         LINE#         115
+  C:02F1H         LINE#         116
+  C:02F4H         LINE#         117
+  -------         ENDPROC       UART_ROUTINE
+  -------         ENDMOD        MAIN
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  12/10/2025  15:34:56  PAGE 6
+
+
+  -------         MODULE        DELAY
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  C:039CH         PUBLIC        _Delay
+  -------         PROC          _DELAY
+  D:0006H         SYMBOL        xms
+  -------         DO            
+  D:0005H         SYMBOL        i
+  D:0004H         SYMBOL        j
+  -------         ENDDO         
+  C:039CH         LINE#         1
+  C:039CH         LINE#         2
+  C:039CH         LINE#         3
+  C:03A6H         LINE#         4
+  C:03A6H         LINE#         5
+  C:03A8H         LINE#         6
+  C:03AAH         LINE#         8
+  C:03AAH         LINE#         9
+  C:03ACH         LINE#         10
+  C:03AEH         LINE#         11
+  C:03B0H         LINE#         12
+  -------         ENDPROC       _DELAY
+  -------         ENDMOD        DELAY
+
+  -------         MODULE        TIMER0
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  B:00A8H.7       PUBLIC        EA
+  C:0385H         PUBLIC        Timer0_Init
+  D:0089H         PUBLIC        TMOD
+  B:00A8H.1       PUBLIC        ET0
+  B:0088H.5       PUBLIC        TF0
+  D:008CH         PUBLIC        TH0
+  D:008AH         PUBLIC        TL0
+  B:00B8H.1       PUBLIC        PT0
+  B:0088H.4       PUBLIC        TR0
+  -------         PROC          TIMER0_INIT
+  C:0385H         LINE#         5
+  C:0385H         LINE#         6
+  C:0385H         LINE#         8
+  C:0388H         LINE#         9
+  C:038BH         LINE#         10
+  C:038EH         LINE#         11
+  C:0391H         LINE#         12
+  C:0393H         LINE#         13
+  C:0395H         LINE#         14
+  C:0397H         LINE#         15
+  C:0399H         LINE#         16
+  C:039BH         LINE#         17
+  -------         ENDPROC       TIMER0_INIT
+  -------         ENDMOD        TIMER0
+
+  -------         MODULE        MOTOR
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:00B0H         PUBLIC        P3
+  C:03CFH         PUBLIC        Car_Left
+  C:03D5H         PUBLIC        Car_SharpLeft
+  C:040BH         PUBLIC        RightMotor_Stop
+  C:03E1H         PUBLIC        Car_Stop
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  12/10/2025  15:34:56  PAGE 7
+
+
+  C:0410H         PUBLIC        RightMotor_SharpStop
+  C:03E7H         PUBLIC        Car_SharpStop
+  C:03F7H         PUBLIC        LeftMotor_Stop
+  C:03FCH         PUBLIC        LeftMotor_SharpStop
+  C:0003H         PUBLIC        Car_Go
+  B:00B0H.3       PUBLIC        IN1
+  B:00B0H.4       PUBLIC        IN2
+  B:00B0H.5       PUBLIC        IN3
+  B:00B0H.6       PUBLIC        IN4
+  C:0401H         PUBLIC        RightMotor_Forward
+  C:03EDH         PUBLIC        LeftMotor_Forward
+  C:0406H         PUBLIC        RightMotor_Back
+  C:03C3H         PUBLIC        Car_Back
+  C:03F2H         PUBLIC        LeftMotor_Back
+  C:03C9H         PUBLIC        Car_Right
+  C:03DBH         PUBLIC        Car_SharpRight
+  -------         PROC          LEFTMOTOR_FORWARD
+  C:03EDH         LINE#         10
+  C:03EDH         LINE#         11
+  -------         ENDPROC       LEFTMOTOR_FORWARD
+  -------         PROC          LEFTMOTOR_BACK
+  C:03F2H         LINE#         12
+  C:03F2H         LINE#         13
+  -------         ENDPROC       LEFTMOTOR_BACK
+  -------         PROC          LEFTMOTOR_STOP
+  C:03F7H         LINE#         14
+  C:03F7H         LINE#         15
+  -------         ENDPROC       LEFTMOTOR_STOP
+  -------         PROC          LEFTMOTOR_SHARPSTOP
+  C:03FCH         LINE#         16
+  C:03FCH         LINE#         17
+  -------         ENDPROC       LEFTMOTOR_SHARPSTOP
+  -------         PROC          RIGHTMOTOR_FORWARD
+  C:0401H         LINE#         20
+  C:0401H         LINE#         21
+  -------         ENDPROC       RIGHTMOTOR_FORWARD
+  -------         PROC          RIGHTMOTOR_BACK
+  C:0406H         LINE#         22
+  C:0406H         LINE#         23
+  -------         ENDPROC       RIGHTMOTOR_BACK
+  -------         PROC          RIGHTMOTOR_STOP
+  C:040BH         LINE#         24
+  C:040BH         LINE#         25
+  -------         ENDPROC       RIGHTMOTOR_STOP
+  -------         PROC          RIGHTMOTOR_SHARPSTOP
+  C:0410H         LINE#         26
+  C:0410H         LINE#         27
+  -------         ENDPROC       RIGHTMOTOR_SHARPSTOP
+  -------         PROC          CAR_GO
+  C:0003H         LINE#         30
+  C:0003H         LINE#         31
+  -------         ENDPROC       CAR_GO
+  -------         PROC          CAR_BACK
+  C:03C3H         LINE#         32
+  C:03C3H         LINE#         33
+  -------         ENDPROC       CAR_BACK
+  -------         PROC          CAR_RIGHT
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  12/10/2025  15:34:56  PAGE 8
+
+
+  C:03C9H         LINE#         34
+  C:03C9H         LINE#         35
+  -------         ENDPROC       CAR_RIGHT
+  -------         PROC          CAR_LEFT
+  C:03CFH         LINE#         36
+  C:03CFH         LINE#         37
+  -------         ENDPROC       CAR_LEFT
+  -------         PROC          CAR_SHARPLEFT
+  C:03D5H         LINE#         38
+  C:03D5H         LINE#         39
+  -------         ENDPROC       CAR_SHARPLEFT
+  -------         PROC          CAR_SHARPRIGHT
+  C:03DBH         LINE#         40
+  C:03DBH         LINE#         41
+  -------         ENDPROC       CAR_SHARPRIGHT
+  -------         PROC          CAR_STOP
+  C:03E1H         LINE#         42
+  C:03E1H         LINE#         43
+  -------         ENDPROC       CAR_STOP
+  -------         PROC          CAR_SHARPSTOP
+  C:03E7H         LINE#         44
+  C:03E7H         LINE#         45
+  -------         ENDPROC       CAR_SHARPSTOP
+  -------         ENDMOD        MOTOR
+
+  -------         MODULE        ULTRASONIC
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  B:00A0H.0       PUBLIC        Echo
+  D:00A0H         PUBLIC        P2
+  B:00A0H.1       PUBLIC        Trig
+  C:030FH         PUBLIC        Ultrasonic_Avoidance
+  C:0415H         PUBLIC        Delay20us
+  D:0012H         PUBLIC        distance
+  C:0154H         PUBLIC        GetDistance
+  -------         PROC          DELAY20US
+  -------         DO            
+  D:0007H         SYMBOL        i
+  -------         ENDDO         
+  C:0415H         LINE#         12
+  C:0415H         LINE#         13
+  C:0415H         LINE#         18
+  C:0417H         LINE#         19
+  C:0419H         LINE#         20
+  -------         ENDPROC       DELAY20US
+  -------         PROC          GETDISTANCE
+  -------         DO            
+  D:0014H         SYMBOL        time_cnt
+  D:0082H         SYMBOL        temp_distance
+  D:0004H         SYMBOL        timeout
+  -------         ENDDO         
+  C:0154H         LINE#         23
+  C:0154H         LINE#         24
+  C:0154H         LINE#         25
+  C:015DH         LINE#         26
+  C:0161H         LINE#         27
+  C:0163H         LINE#         30
+  C:0165H         LINE#         31
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  12/10/2025  15:34:56  PAGE 9
+
+
+  C:0168H         LINE#         32
+  C:016BH         LINE#         33
+  C:016DH         LINE#         36
+  C:0170H         LINE#         37
+  C:0170H         LINE#         38
+  C:0173H         LINE#         39
+  C:0178H         LINE#         40
+  C:0181H         LINE#         41
+  C:0181H         LINE#         42
+  C:0185H         LINE#         43
+  C:0185H         LINE#         44
+  C:0185H         LINE#         47
+  C:018EH         LINE#         48
+  C:0191H         LINE#         49
+  C:0191H         LINE#         50
+  C:0194H         LINE#         51
+  C:01A9H         LINE#         54
+  C:01BEH         LINE#         55
+  C:01BEH         LINE#         56
+  C:01C3H         LINE#         57
+  C:01C3H         LINE#         58
+  C:01C3H         LINE#         63
+  C:01E1H         LINE#         66
+  C:01ECH         LINE#         67
+  C:01ECH         LINE#         68
+  C:01EFH         LINE#         69
+  C:01EFH         LINE#         71
+  C:01F3H         LINE#         72
+  -------         ENDPROC       GETDISTANCE
+  -------         PROC          ULTRASONIC_AVOIDANCE
+  -------         DO            
+  D:0010H         SYMBOL        measure_counter
+  -------         ENDDO         
+  C:030FH         LINE#         75
+  C:030FH         LINE#         76
+  C:030FH         LINE#         80
+  C:0317H         LINE#         81
+  C:0320H         LINE#         82
+  C:0320H         LINE#         83
+  C:0325H         LINE#         86
+  C:032CH         LINE#         89
+  C:0341H         LINE#         90
+  C:0341H         LINE#         91
+  C:0344H         LINE#         92
+  C:0344H         LINE#         93
+  C:0344H         LINE#         94
+  -------         ENDPROC       ULTRASONIC_AVOIDANCE
+  -------         ENDMOD        ULTRASONIC
+
+  -------         MODULE        ?C?LMUL
+  C:0026H         PUBLIC        ?C?LMUL
+  -------         ENDMOD        ?C?LMUL
+
+  -------         MODULE        ?C?ULDIV
+  C:00B1H         PUBLIC        ?C?ULDIV
+  -------         ENDMOD        ?C?ULDIV
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  12/10/2025  15:34:56  PAGE 10
+
+
+  -------         MODULE        ?C?ULCMP
+  C:0143H         PUBLIC        ?C?ULCMP
+  -------         ENDMOD        ?C?ULCMP
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?CAR_RIGHT?MOTOR
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?CAR_LEFT?MOTOR
+
+Program Size: data=25.0 xdata=0 code=1048
+LINK/LOCATE RUN COMPLETE.  2 WARNING(S),  0 ERROR(S)

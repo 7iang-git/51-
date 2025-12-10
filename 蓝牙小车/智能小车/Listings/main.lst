@@ -1,0 +1,150 @@
+C51 COMPILER V9.59.0.0   MAIN                                                              12/10/2025 15:32:10 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\keil\MDK\MDK\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "Delay.h"
+   3          #include "Timer0.h"
+   4          #include "motor.h"
+   5          #include "ultrasonic.h"
+   6          
+   7          ////////////变量声明//////////
+   8          
+   9          //////////////////pwm//////////////
+  10          unsigned int PWML=25;
+  11          //unsigned int PWM_Low_TimeL=500; 
+  12          unsigned int PWMR=56; 
+  13          //unsigned int PWM_Low_TimeR=500; 
+  14          unsigned int t=0; 
+  15          ///////////////////电机////////////
+  16          sbit ENAL=P3^2;
+  17          sbit ENAR=P3^7;
+  18          /////////////////红外/////////////
+  19          sbit IRN1=P2^7;
+  20          sbit IRN2=P2^6;
+  21          sbit IRN3=P2^5;
+  22          sbit IRN4=P2^4;
+  23          ////////////////蓝牙/////////////
+  24          unsigned int receive_data;
+  25          
+  26          ////////////////////////蓝牙接收函数///////////////////////
+  27          void Receive_Data(unsigned char m)
+  28          {
+  29   1       switch(m)
+  30   1        {
+  31   2         case '2': 
+  32   2         {
+  33   3          Car_Back();break;
+  34   3         }
+  35   2         case '8': 
+  36   2         {
+  37   3          Car_Go();break;
+  38   3         }
+  39   2         case '4': 
+  40   2         {
+  41   3          Car_SharpLeft();break;
+  42   3         }
+  43   2         case '6':
+  44   2         {
+  45   3         Car_SharpRight();break;
+  46   3         }
+  47   2         case '0':
+  48   2         {
+  49   3          Car_SharpStop();break;
+  50   3         }
+  51   2        }
+  52   1      }
+  53          ////////////////////////串口中断初始化函数///////////////////////
+  54          void Uart_Init()
+C51 COMPILER V9.59.0.0   MAIN                                                              12/10/2025 15:32:10 PAGE 2   
+
+  55          {
+  56   1          PCON = 0x00;   // 关倍频
+  57   1          SCON = 0x50;   // 串口模式1，允许接收
+  58   1          
+  59   1          // 只设置定时器1，不影响定时器0
+  60   1          TMOD &= 0x0F;   // 清除高4位（定时器1），保留低4位（定时器0）
+  61   1          TMOD |= 0x20;   // 设置定时器1为模式2（8位自动重装）
+  62   1          
+  63   1          TL1 = 0xFD;     // 9600波特率@11.0592MHz
+  64   1          TH1 = 0xFD;
+  65   1          ET1 = 0;        // 禁止定时器1中断
+  66   1          TR1 = 1;        // 启动定时器1
+  67   1          
+  68   1          EA = 1;         // 开总中断
+  69   1          ES = 1;         // 开串口中断
+  70   1      }
+  71          
+  72          //////////////////////////////main函数///////////////////////////
+  73          void main()
+  74          { 
+  75   1        Timer0_Init();
+  76   1        Uart_Init();
+  77   1        while(1)
+  78   1        {
+  79   2          Ultrasonic_Avoidance();
+  80   2          // 短延时，避免循环过快
+  81   2          Delay(1);
+  82   2        }
+  83   1      
+  84   1      }
+  85          /////////////////////////////定时器0pwm//////////////////////////////
+  86          void Timer0_Routine() interrupt 1   
+  87          {
+  88   1       TL0 = (65535-184)%256;       //设置定时初始值
+  89   1        TH0 = (65535-184)/256;        //设置定时初始值
+  90   1        t++;
+  91   1        if(t<=PWML)
+  92   1        {
+  93   2          ENAL=1;
+  94   2        }
+  95   1        else{ENAL=0;} 
+  96   1        
+  97   1        if(t<=PWMR)
+  98   1        {
+  99   2          ENAR=1;
+ 100   2        }
+ 101   1        else{ENAR=0;} 
+ 102   1        
+ 103   1        if(t>100) 
+ 104   1        {
+ 105   2          t=0;
+ 106   2        }
+ 107   1        //周期为200微秒乘以100  PWM为百分比 范围0到100
+ 108   1      }
+ 109          
+ 110          ////////////////////////串口中断服务函数///////////////////////
+ 111          void Uart_Routine() interrupt 4
+ 112          {  
+ 113   1        Car_Stop();
+ 114   1        RI=0;
+ 115   1        receive_data=SBUF;
+ 116   1        Receive_Data(receive_data);
+C51 COMPILER V9.59.0.0   MAIN                                                              12/10/2025 15:32:10 PAGE 3   
+
+ 117   1      }
+ 118          
+ 119          
+ 120          
+ 121          
+ 122          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    225    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,120 @@
+C51 COMPILER V9.59.0.0   ULTRASONIC                                                        12/10/2025 15:34:56 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE ULTRASONIC
+OBJECT MODULE PLACED IN .\Objects\ultrasonic.obj
+COMPILER INVOKED BY: D:\keil\MDK\MDK\C51\BIN\C51.EXE ultrasonic.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Li
+                    -stings\ultrasonic.lst) TABS(2) OBJECT(.\Objects\ultrasonic.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "Delay.h"
+   3          #include "motor.h"
+   4          
+   5          // 超声波引脚定义
+   6          sbit Trig = P2^1;
+   7          sbit Echo = P2^0;
+   8          
+   9          // 全局变量定义
+  10          unsigned int distance = 0;
+  11          
+  12          void Delay20us(void)
+  13          {
+  14   1          unsigned char data i;
+  15   1          
+  16   1          // 11.0592MHz下，20μs需要约18.5个机器周期
+  17   1          // 调整为8，经过测试大约18-20μs
+  18   1          i = 8;  // 调整为8
+  19   1          while(--i);
+  20   1      }
+  21          
+  22          // 获取距离函数
+  23          unsigned int GetDistance(void)
+  24          {
+  25   1          unsigned long time_cnt = 0;
+  26   1          unsigned int temp_distance = 0;
+  27   1          unsigned int timeout = 0;
+  28   1          
+  29   1          // 发送触发脉冲（10us高电平）
+  30   1          Trig = 1;
+  31   1          Delay20us();  // 延时20us
+  32   1          Delay20us();  // 再延时20us，总共40us确保可靠
+  33   1          Trig = 0;
+  34   1          
+  35   1          // 等待回声开始（带超时保护）
+  36   1          while(!Echo)
+  37   1          {
+  38   2              Delay20us();
+  39   2              timeout++;
+  40   2              if(timeout > 500)  // 约10ms超时
+  41   2              {
+  42   3                  return 0;  // 返回0表示超时
+  43   3              }
+  44   2          }
+  45   1          
+  46   1          // 开始计时（简单循环计数方式，不依赖定时器）
+  47   1          time_cnt = 0;
+  48   1          while(Echo)
+  49   1          {
+  50   2              Delay20us();  // 每次延时约20us
+  51   2              time_cnt++;
+  52   2              
+  53   2              // 超时保护（最大测量距离约4.5米，对应约26ms）
+  54   2              if(time_cnt > 1300)  // 1300 * 20us = 26ms
+C51 COMPILER V9.59.0.0   ULTRASONIC                                                        12/10/2025 15:34:56 PAGE 2   
+
+  55   2              {
+  56   3                  return 450;  // 返回最大距离
+  57   3              }
+  58   2          }
+  59   1          
+  60   1          // 计算距离
+  61   1          // time_cnt的单位是20us，所以总时间 = time_cnt * 20 us
+  62   1          // 距离(cm) = 时间(us) / 58
+  63   1          temp_distance = (unsigned int)((time_cnt * 20) / 58);
+  64   1          
+  65   1          // 限制最大距离
+  66   1          if(temp_distance > 450)
+  67   1          {
+  68   2              temp_distance = 450;
+  69   2          }
+  70   1          
+  71   1          return temp_distance;
+  72   1      }
+  73          
+  74          // 超声波避障处理函数
+  75          void Ultrasonic_Avoidance(void)
+  76          {
+  77   1          static unsigned int measure_counter = 0;
+  78   1          
+  79   1          // 控制测量频率（每100ms测量一次）
+  80   1          measure_counter++;
+  81   1          if(measure_counter >= 100)
+  82   1          {
+  83   2              measure_counter = 0;
+  84   2              
+  85   2              // 测量距离
+  86   2              distance = GetDistance();
+  87   2              
+  88   2              // 避障判断（距离小于30cm时停止）
+  89   2              if(distance < 10 && distance > 0)
+  90   2              {
+  91   3                  Car_SharpStop();  // 立即停止
+  92   3              }
+  93   2          }
+  94   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    219    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
